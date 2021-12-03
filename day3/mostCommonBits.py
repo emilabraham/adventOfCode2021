@@ -19,14 +19,42 @@ def getMostAndLeastCommonBits(bits):
     
     if zeroCount > oneCount:
         return [0,1]
-    else:
+    elif zeroCount < oneCount:
         return [1,0]
+
+def getMostCommonBits(bits):
+    zeroCount = 0
+    oneCount = 0
+    for bit in bits:
+        if bit == 0:
+            zeroCount += 1
+        else:
+            oneCount += 1
+    
+    if zeroCount > oneCount:
+        return 0
+    elif zeroCount <= oneCount:
+        return 1
+
+def getLeastCommonBits(bits):
+    zeroCount = 0
+    oneCount = 0
+    for bit in bits:
+        if bit == 0:
+            zeroCount += 1
+        else:
+            oneCount += 1
+    
+    if zeroCount <= oneCount:
+        return 0
+    elif zeroCount > oneCount:
+        return 1
 
 # Convert a binary list to a decimal number.
 def binaryToDecimal(binary):
   number = 0
-  for b in binary:
-    number = (2 * number) + b
+  for b in binary[:len(binary)-1]:
+    number = (2 * number) + int(b)
   return number
 
 for i in range(bitLength-1):
@@ -37,6 +65,42 @@ for i in range(bitLength-1):
     gammaRate.append(gammaAndEpsilonBits[0])
     epsilonRate.append(gammaAndEpsilonBits[1])
 
-gamma = binaryToDecimal(gammaRate)
-epsilon = binaryToDecimal(epsilonRate)
-print(gamma * epsilon)
+# returns true if the bit is the mostCommonBit
+# Should generalize this for most/least common bits.
+def gammaFilter(line, mostCommonBit, index):
+    if int(line[index]) == mostCommonBit:
+        return True
+    else:
+        return False
+
+def linesToBits(lines, index):
+    bits = []
+    for line in lines:
+        bits.append(int(line[index]))
+    return bits
+
+# Loops through lines and filters out based on the gammaRate or the epsilonRate.
+def filterOxygenGeneratorRating(lines):
+    filteredList = lines
+    for index in range(bitLength-1):
+        print(filteredList)
+        bit = getMostCommonBits(linesToBits(filteredList, index))
+        if (len(filteredList) > 1):
+            filteredList = list(filter(lambda line: gammaFilter(line, bit, index), filteredList))
+    return filteredList
+
+def filterCo2ScrubberRating(lines):
+    filteredList = lines
+    for index in range(bitLength-1):
+        print(filteredList)
+        bit = getLeastCommonBits(linesToBits(filteredList, index))
+        if (len(filteredList) > 1):
+            filteredList = list(filter(lambda line: gammaFilter(line, bit, index), filteredList))
+    return filteredList
+
+
+oxygenGeneratorRating = binaryToDecimal(filterOxygenGeneratorRating(lines)[0])
+co2ScrubberRating = binaryToDecimal(filterCo2ScrubberRating(lines)[0])
+print(oxygenGeneratorRating)
+print(co2ScrubberRating)
+print(co2ScrubberRating * oxygenGeneratorRating)
