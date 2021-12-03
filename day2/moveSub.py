@@ -1,4 +1,4 @@
-# Move the sub basedon the input
+# Move the sub based on the input
 fp = open("input")
 lines = fp.readlines()
 depth = 0
