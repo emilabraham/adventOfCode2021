@@ -4,6 +4,7 @@ line = fp.readline()
 drawings = line.split(',')
 remainingLines = fp.readlines()
 remainingLines = list(filter(lambda x: x != '\n', remainingLines))
+winningCards = []
 
 # Represents a bingo slot.
 # The value represents the number that is in the slot.
@@ -111,24 +112,27 @@ def sumUnMarked(card):
                 sum += value.value
     return sum
 
-# Validate the cards. Return the winning numbers or False
+# Validate the cards. Return the last winning index
 def validateCards(cards):
-    for card in cards:
+    for index, card in enumerate(cards):
         validation = validateCard(card)
         if (validation != False):
-            return sumUnMarked(card)
+            if index not in winningCards:
+                winningCards.append(index)
+                if (len(winningCards) == len(cards)):
+                    return index
     return False
 
 # Draw from a list of numbers and mark them on the cards
+# Then validate the cards.
+# Print out the sum of the unmarked numbers of the last winning card * the number that was just drawn
 def drawNumbers(cards, numbers):
     for draw in numbers:
         list(map(lambda x: drawNumber(x, draw), cards))
         # Will either be a sum the winning numbers or False
         validation = validateCards(cards)
         if validation != False:
-            printCards(cards)
-            print(validation * draw)
-            break
+            print(sumUnMarked(cards[validation]) * draw)
 
 drawings = list(map(removeNewLine, drawings))
 bingoCards = createCards(remainingLines)
