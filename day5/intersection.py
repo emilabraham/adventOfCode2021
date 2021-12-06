@@ -1,6 +1,8 @@
 # Find the intersection of of lines.
-fp = open("input2")
+fp = open("input")
 lines = fp.readlines()
+diagramSize = 1000
+diagram = []
 
 # Represents a point with an x and y coordinate.
 class Point:
@@ -9,7 +11,7 @@ class Point:
         self.y = y
     
     def printMe(self):
-        return (self.x + "," + self.y)
+        return (str(self.x) + "," + str(self.y))
 
 # Represents a line with a start and end point.
 class Line:
@@ -23,7 +25,7 @@ class Line:
 # Convert a string representation of a point into a Point object.
 def convertToPoint(stringPoint):
     splitPoint = stringPoint.split(",")
-    return Point(splitPoint[0], splitPoint[1])
+    return Point(int(splitPoint[0]), int(splitPoint[1]))
 
 # Convert a string representation of a line into a Line object.
 def convertToLine(stringLine):
@@ -41,9 +43,53 @@ def onlyHorizontalOrVertical(line):
     else:
         return False
 
+# Converts a line into a list of points.
+def convertToPoints(line):
+    points = []
+    if (line.start.x == line.end.x):
+        for y in range(min(line.start.y, line.end.y), max(line.end.y, line.start.y) + 1):
+            points.append(Point(line.start.x, y))
+    elif (line.start.y == line.end.y):
+        for x in range(min(line.start.x, line.end.x), max(line.end.x, line.start.x) + 1):
+            points.append(Point(x, line.start.y))
+    return points
+
+def printDiagram():
+    for y in range(0, diagramSize):
+        for x in range(0, diagramSize):
+            print(diagram[y][x], end=",")
+        print("\n")
 
 lines = list(map(convertToLine, lines))
 lines = list(filter(lambda line: onlyHorizontalOrVertical(line), lines))
 
+# Populate the diagram with 0s
+for y in range(0, diagramSize + 1):
+    row = []
+    for x in range(0, diagramSize + 1):
+        row.append(0)
+    diagram.append(row)
+
+# Populate the diagram with the lines.
 for line in lines:
-    print(line.printMe())
+    points = convertToPoints(line)
+    for point in points:
+        # Reverse the coordinates because y is inverted
+        diagram[point.y][point.x] += 1
+
+# Count the number of intersections >= 2
+count = 0
+for y in range(0, diagramSize):
+    for x in range(0, diagramSize):
+        if (diagram[x][y] >= 2):
+            count += 1
+
+printDiagram()
+print(count) 
+
+# for point in points:
+#     print(point.printMe())
+
+# for line in lines:
+#     print(line.printMe())
+# print(lines)
