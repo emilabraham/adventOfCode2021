@@ -52,6 +52,17 @@ def convertToPoints(line):
     elif (line.start.y == line.end.y):
         for x in range(min(line.start.x, line.end.x), max(line.end.x, line.start.x) + 1):
             points.append(Point(x, line.start.y))
+    else:
+        xValues = []
+        yValues = []
+        xIncrement = 1 if line.start.x < line.end.x else -1
+        yIncrement = 1 if line.start.y < line.end.y else -1
+        for x in range(line.start.x, line.end.x + xIncrement, xIncrement):
+            xValues.append(x)
+        for y in range(line.start.y, line.end.y + yIncrement, yIncrement):
+            yValues.append(y)
+        for i in range(0, len(xValues)):
+            points.append(Point(xValues[i], yValues[i]))
     return points
 
 def printDiagram():
@@ -61,7 +72,7 @@ def printDiagram():
         print("\n")
 
 lines = list(map(convertToLine, lines))
-lines = list(filter(lambda line: onlyHorizontalOrVertical(line), lines))
+# lines = list(filter(lambda line: onlyHorizontalOrVertical(line), lines))
 
 # Populate the diagram with 0s
 for y in range(0, diagramSize + 1):
