@@ -5,13 +5,17 @@ crabs = crabs.split(",")
 crabs = list(map(int, crabs))
 maxPosition = max(crabs)
 
+# Calculate the fuel consumed for a given distance
+def fuelConsumedEquation(distance):
+    return int((distance * (distance - 1)) / 2)
+
 # Shift the crabs to the position and return the fuel consumed
 def shiftToPosition(crabs, position):
     fuelConsumed = 0
 
     for i in range(len(crabs)):
         distance = abs(crabs[i] - position)
-        fuelConsumed += distance
+        fuelConsumed += fuelConsumedEquation(distance + 1)
         crabs[i] = position
     
     return fuelConsumed
