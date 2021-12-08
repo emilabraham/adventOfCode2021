@@ -1,5 +1,5 @@
 # Fix the seven-segment displays
-fp = open("input3")
+fp = open("input")
 lines = fp.readlines()
 signalPatterns = []
 digitOutputs  = []
@@ -64,10 +64,21 @@ def containsPattern(signal, pattern):
             doesContain = False
     return doesContain
 
+# Is the pattern equivalent to the signal?
+def isEquivalent(signal, pattern):
+    return containsPattern(signal, pattern) and len(signal) == len(pattern)
+
 # Add the digit and pattern to the dictionarys
 def addToDictionary(d, rd, digit, pattern):
     d[pattern] = digit
     rd[digit] = pattern
+
+# The characters in the key are not necessarily in the same order
+# This fetches from the dictionary without regard for the order
+def fetchFromDictionary(d, pattern):
+    for (k, v) in d.items():
+        if isEquivalent(k, pattern):
+            return v
 
 # 9 is the only digit that is 6 in length and contains all the characters of 4
 def add9(d, rd, patterns):
@@ -116,9 +127,27 @@ def add2and3(d, rd, patterns):
     addToDictionary(d, rd, 2, two)
     addToDictionary(d, rd, 3, three)
 
-add9(dictionary, rdictionary, signalPatterns[0])
-add6and5and0(dictionary, rdictionary, signalPatterns[0])
-add2and3(dictionary, rdictionary, signalPatterns[0])
+# Convert the output to the digit representation
+def getOutput(d, output):
+    decodedOutput = list(map(lambda s: fetchFromDictionary(d, s), output))
+    decodedOutput = list(map(str, decodedOutput))
+    decodedOutput = ''.join(decodedOutput)
+    decodedOutput = int(decodedOutput)
+    return decodedOutput
 
-print(dictionary)
-print(rdictionary)
+# Create the dictionarys for each signal pattern.
+# Then find the digit representation.
+# Then sum them.
+def sumOutputs(signalPatterns, digitOutputs):
+    outputs = []
+    for i in range(len(signalPatterns)):
+        d = createUniqueDictionary(signalPatterns[i])
+        r = reverseDictionary(d)
+        add9(d, r, signalPatterns[i])
+        add6and5and0(d, r, signalPatterns[i])
+        add2and3(d, r, signalPatterns[i])
+        outputs.append(getOutput(d, digitOutputs[i]))
+
+    return sum(outputs)
+
+print(sumOutputs(signalPatterns, digitOutputs))
