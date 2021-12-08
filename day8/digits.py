@@ -64,14 +64,16 @@ def containsPattern(signal, pattern):
             doesContain = False
     return doesContain
 
+# Add the digit and pattern to the dictionarys
+def addToDictionary(d, rd, digit, pattern):
+    d[pattern] = digit
+    rd[digit] = pattern
+
 # 9 is the only digit that is 6 in length and contains all the characters of 4
 def add9(d, rd, patterns):
     filteredKeys = list(filter(lambda k: len(k) == 6, patterns))
-    print(filteredKeys)
     filteredKeys = list(filter(lambda k: containsPattern(k, rd[4]), filteredKeys))
-    print(filteredKeys)
-    d[filteredKeys[0]] = 9
-    rd[9] = filteredKeys[0]
+    addToDictionary(d, rd, 9, filteredKeys[0])
 
 # Only run after add9
 # Filter for remaining 6 digit patterns: 6 or 0
@@ -81,14 +83,23 @@ def add9(d, rd, patterns):
 # This allows us to identify 6, 5, 0
 def add6and5and0(d, rd, patterns):
     filteredKeys = list(filter(lambda k: len(k) == 6, patterns))
-    print(filteredKeys)
-    filteredKeys = list(filter(lambda k: containsPattern(k, rd[4]), filteredKeys))
-    print(filteredKeys)
-    d[filteredKeys[0]] = 9
-    rd[9] = filteredKeys[0]
-
+    filteredKeys6or0 = list(filter(lambda k: k != rd[9], filteredKeys))
+    filtered5Digits = list(filter(lambda k: len(k) == 5, patterns))
+    five = ''
+    six = ''
+    for k in filteredKeys6or0:
+        for j in filtered5Digits:
+            if (containsPattern(k, j)):
+                five = j
+                six = k
+                break
+    zero = list(filter(lambda k: k != six, filteredKeys6or0))[0]
+    addToDictionary(d, rd, 5, five)
+    addToDictionary(d, rd, 6, six)
+    addToDictionary(d, rd, 0, zero)
 
 add9(dictionary, rdictionary, signalPatterns[0])
+add6and5and0(dictionary, rdictionary, signalPatterns[0])
 
 print(dictionary)
 print(rdictionary)
