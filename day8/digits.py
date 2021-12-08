@@ -98,8 +98,27 @@ def add6and5and0(d, rd, patterns):
     addToDictionary(d, rd, 6, six)
     addToDictionary(d, rd, 0, zero)
 
+# Only run after add6and5and0
+# Filter for 5 digit patterns: 2, 3
+# Only 3 will contain all the characters of 7
+# Remaining 5 digit number is 2
+# This allows us to identify 2, 3
+def add2and3(d, rd, patterns):
+    filteredKeys = list(filter(lambda k: len(k) == 5, patterns))
+    filteredKeys2or3 = list(filter(lambda k: k != rd[5], filteredKeys))
+    two = ''
+    three = ''
+    for k in filteredKeys2or3:
+        if (containsPattern(k, rd[7])):
+            three = k
+            break
+    two = list(filter(lambda k: k != three, filteredKeys2or3))[0]
+    addToDictionary(d, rd, 2, two)
+    addToDictionary(d, rd, 3, three)
+
 add9(dictionary, rdictionary, signalPatterns[0])
 add6and5and0(dictionary, rdictionary, signalPatterns[0])
+add2and3(dictionary, rdictionary, signalPatterns[0])
 
 print(dictionary)
 print(rdictionary)
