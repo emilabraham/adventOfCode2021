@@ -1,5 +1,5 @@
 # Find the lowpoints of heightmap
-fp = open("input2")
+fp = open("input")
 lines = fp.readlines()
 heightmap = []
 
@@ -64,6 +64,12 @@ def findLowPoints(heightmap):
 
     return lowpoints
 
+def notVisited(point, points):
+    for p in points:
+        if p.x == point.x and p.y == point.y:
+            return False
+    return True
+
 # Recursively find the basins
 # First, find the adjacents of the current point.
 # Then filter out the visited points
@@ -71,8 +77,15 @@ def findBasin(heightmap, point, visited):
     x = point.x
     y = point.y
 
-    if heightmap[y][x] != 9:
+    if heightmap[y][x] != 9 and notVisited(point, visited):
         visited.append(point)
+
+    adjacents = findAdjacent(heightmap, point)
+    adjacents = list(filter((lambda p: notVisited(p, visited)), adjacents))
+    for adjacent in adjacents:
+        newVisited = findBasin(heightmap, adjacent, visited)
+        newVisited = list(filter((lambda p: notVisited(p, visited)), newVisited))
+        visited = visited + newVisited
 
     return visited
 
@@ -128,11 +141,19 @@ def calculateRiskLevel(lowpoints):
     lowpoints = list(map((lambda x: x+1), lowpoints))
     return sum(lowpoints)
 
+# Find the product of a list of numbers
+def product(list):
+    product = 1
+    for i in list:
+        product *= i
+    return product
+
+# Find and return the product of the 3 largest basins in a heatmap
+def calculate3LargestBasins(heightmap):
+    lowpoints = findLowPoints(heightmap)
+    basins = list(map((lambda p: len(findBasin(heightmap, p, []))), lowpoints))
+    basins.sort()
+    return product(basins[-3:])
+
 createHeightmap(heightmap, lines)
-lowpoints = findLowPoints(heightmap)
-for p in lowpoints:
-    print(p.printMe())
-    adjacents = findAdjacent(heightmap, p)
-    for a in adjacents:
-        print(a.printMe(), end=" ")
-    print("\n")
+print(calculate3LargestBasins(heightmap))
