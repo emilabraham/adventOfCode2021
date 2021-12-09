@@ -64,7 +64,8 @@ def findLowPoints(heightmap):
 
     return lowpoints
 
-def notVisited(point, points):
+# Return true if the point is not in the list
+def notInList(point, points):
     for p in points:
         if p.x == point.x and p.y == point.y:
             return False
@@ -77,14 +78,14 @@ def findBasin(heightmap, point, visited):
     x = point.x
     y = point.y
 
-    if heightmap[y][x] != 9 and notVisited(point, visited):
+    if heightmap[y][x] != 9 and notInList(point, visited):
         visited.append(point)
 
     adjacents = findAdjacent(heightmap, point)
-    adjacents = list(filter((lambda p: notVisited(p, visited)), adjacents))
+    adjacents = list(filter((lambda p: notInList(p, visited)), adjacents))
     for adjacent in adjacents:
         newVisited = findBasin(heightmap, adjacent, visited)
-        newVisited = list(filter((lambda p: notVisited(p, visited)), newVisited))
+        newVisited = list(filter((lambda p: notInList(p, visited)), newVisited))
         visited = visited + newVisited
 
     return visited
