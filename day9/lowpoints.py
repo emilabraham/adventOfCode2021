@@ -12,8 +12,7 @@ class Point:
     def printMe(self):
         return (str(self.x) + "," + str(self.y))
 
-# Is the point not in the list
-# Remove newline character from a string and convert to an integer
+# Remove newline character from a string
 def removeNewLine(s):
     return s.replace('\n', '')
 
