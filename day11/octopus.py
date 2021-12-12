@@ -60,12 +60,12 @@ def findAdjacents(grid, x, y):
 def flashIteration(grid, adjacents, flashed):
     while (len(adjacents) > 0):
         point = adjacents.pop()
-        if (grid[point.y][point.x] == 9):
+        if (grid[point.y][point.x] == 9) and notInList(point, flashed):
             flashed.append(point)
             pointAdjacents = findAdjacents(grid, point.x, point.y)
             pointAdjacents = list(filter(lambda p: notInList(p, flashed), pointAdjacents))
             adjacents += pointAdjacents
-        else:
+        elif notInList(point, flashed):
             grid[point.y][point.x] += 1
     for point in flashed:
         grid[point.y][point.x] = 0
@@ -97,7 +97,7 @@ def calculateEnergies(grid, iterations):
                     pointAdjacents = list(filter(lambda p: notInList(p, flashed), pointAdjacents))
                     adjacents += pointAdjacents
                     flashIteration(grid, adjacents, flashed)
-                else:
+                elif notInList(Point(x, y), flashed):
                     grid[y][x] += 1
         print(len(flashed))
         printPoints(flashed)
