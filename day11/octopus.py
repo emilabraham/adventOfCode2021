@@ -104,6 +104,30 @@ def calculateEnergies(grid, iterations):
         flashed = []
     return flashCount
 
+# Keep running through iterations until all the octopus flash simultaneously.
+def simultaneousFlash(grid):
+    flashed = []
+    adjacents = []
+    flashCount = 0
+    iteration = 0
+    while (flashCount != 100):
+        iteration += 1
+        for y in range(len(grid)):
+            for x in range(len(grid[y])):
+                if grid[y][x] == 9 and notInList(Point(x, y), flashed):
+                    flashed.append(Point(x, y))
+                    pointAdjacents = findAdjacents(grid, x, y)
+                    pointAdjacents = list(filter(lambda p: notInList(p, flashed), pointAdjacents))
+                    adjacents += pointAdjacents
+                    flashIteration(grid, adjacents, flashed)
+                elif notInList(Point(x, y), flashed):
+                    grid[y][x] += 1
+        flashCount = len(flashed)
+        flashed = []
+
+    return iteration
+
 createGrid(grid, lines)
-print(calculateEnergies(grid, 100))
+# print(calculateEnergies(grid, 195))
+print(simultaneousFlash(grid))
 printGrid(grid)
