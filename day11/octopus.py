@@ -1,5 +1,5 @@
 # Simulate octopus flashes
-fp = open("input2")
+fp = open("input")
 lines = fp.readlines()
 grid = []
 
@@ -16,6 +16,7 @@ class Point:
 def removeNewLine(s):
     return s.replace('\n', '')
 
+# Print the grid in a nice format
 def printGrid(grid):
     for y in range(len(grid)):
         for x in range(len(grid[y])):
@@ -50,7 +51,7 @@ def findAdjacents(grid, x, y):
     elif x == len(grid[y]) - 1: # right column
         return [Point(x-1, y), Point(x, y-1), Point(x, y+1), Point(x-1, y-1), Point(x-1, y+1)]
     else:
-        return [Point(x-1, y), Point(x, y-1), Point(x, y+1), Point(x-1, y-1), Point(x-1, y+1), Point(x+1, y-1), Point(x+1, y+1)]
+        return [Point(x-1, y), Point(x, y-1), Point(x, y+1), Point(x-1, y-1), Point(x-1, y+1), Point(x+1, y-1), Point(x+1, y+1), Point(x+1, y)]
 
 # A flash iteration
 # If the energy exceeds 9, then increase the energy of adjacent cells by 1.
@@ -99,10 +100,10 @@ def calculateEnergies(grid, iterations):
                     flashIteration(grid, adjacents, flashed)
                 elif notInList(Point(x, y), flashed):
                     grid[y][x] += 1
-        print(len(flashed))
-        printPoints(flashed)
+        flashCount += len(flashed)
+        flashed = []
     return flashCount
 
 createGrid(grid, lines)
-calculateEnergies(grid, 2)
+print(calculateEnergies(grid, 100))
 printGrid(grid)
