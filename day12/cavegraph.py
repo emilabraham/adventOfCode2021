@@ -35,6 +35,8 @@ def createCave(line):
     return Cave(entrance, isSmall, [exit])
 
 # Build a map of caves and their connections
+# TODO: I need to reverse the cave path list so that we have keys for the exits as well.
+# TODO: This way we have a complete map.
 def createCavernMap(cavernMap, lines):
     for line in lines:
         cave = createCave(removeNewLine(line))
