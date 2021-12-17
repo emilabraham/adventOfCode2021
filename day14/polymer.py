@@ -1,5 +1,5 @@
 # Pair insertion into a polymer template
-fp = open("input2")
+fp = open("input")
 lines = fp.readlines()
 template = lines[0]
 rules = lines[2:]
@@ -17,6 +17,8 @@ class Pair:
 def removeNewLine(s):
     return s.replace('\n', '')
 
+template = list(removeNewLine(template))
+
 # Parse the input into rules
 def parseRules(rules):
     pairs = []
@@ -31,5 +33,51 @@ def printRules(rules):
     for rule in rules:
         print(rule.printMe())
 
+# One iteration of polymer pair insertion
+def insertIntoTemplate(template, rules):
+    newTemplate = []
+    for i in range(len(template)):
+        pairing = template[i:i+2]
+        added = False
+        for rule in rules:
+            if (rule.pairing == pairing):
+                added = True
+                newTemplate += pairing[0] + rule.insertion
+        if not added:
+            newTemplate += pairing[0]
+    
+    return newTemplate
+
+# Insert into the template n times
+def insertIntoTemplateNTimes(template, rules, n):
+    for i in range(n):
+        template = insertIntoTemplate(template, rules)
+    return template
+
+# Return a dictionary of the counts of each element
+def elementCounts(template):
+    counts = {}
+    for element in template:
+        if element in counts:
+            counts[element] += 1
+        else:
+            counts[element] = 1
+    return counts
+
+# Return difference of largeetst and smallest counts
+def countDifference(counts):
+    largetsCount = 0
+    smallestCount = 0
+    for element in counts:
+        if counts[element] > largetsCount:
+            largetsCount = counts[element]
+        if counts[element] < smallestCount or smallestCount == 0:
+            smallestCount = counts[element]
+    
+    return largetsCount - smallestCount
+            
 rules = parseRules(rules)
-printRules(rules)
+template = insertIntoTemplateNTimes(template, rules, 10)
+count = elementCounts(template)
+print(count)
+print(countDifference(count))
