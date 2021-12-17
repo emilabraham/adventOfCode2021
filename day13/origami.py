@@ -22,6 +22,7 @@ class Fold:
     def printMe(self):
         return (str(self.axis) + "," + str(self.direction))
 
+# Remove the new line character from the input
 def removeNewLine(s):
     return s.replace('\n', '')
 
