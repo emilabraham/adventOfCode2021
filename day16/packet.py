@@ -13,24 +13,27 @@ def hexStringToBinary(hexString):
         binary += hexToBinary(hexString[i])
     return binary
 
-binaryString = hexStringToBinary("38006F45291200")
+binaryString = hexStringToBinary("EE00D40C823060")
 
 # Convert a binary number to decimal
 def binaryToDecimal(binary):
     return int(binary, 2)
 
 # find the packet version
-def findPacketVersion(binaryString):
-    return binaryToDecimal(binaryString[:3])
+def findPacketVersion(binaryString, index):
+    version = binaryToDecimal(binaryString[index:index+3])
+    index += 3
+    return version, index
     
 # find the packet type
-def findPacketType(binaryString):
-    return binaryToDecimal(binaryString[3:6])
+def findPacketType(binaryString, index):
+    type =  binaryToDecimal(binaryString[index:index+3])
+    index += 3
+    return type, index
 
 # Keep reading bits of 5 as long as the first bit is 1
-def findLiteralValue(binaryString):
+def findLiteralValue(binaryString, index):
     literalValue = ""
-    index = 6
     keepReading = True
     while keepReading:
         chunk = binaryString[index:index+5]
@@ -38,6 +41,31 @@ def findLiteralValue(binaryString):
             keepReading = False
         index += 5
         literalValue += chunk[1:5]
-    return binaryToDecimal(literalValue)
+    return binaryToDecimal(literalValue), index
 
-print(findLiteralValue(binaryString))
+# Find the length type Id
+def findPacketLengthTypeId(binaryString, index):
+    lengthType =  binaryString[index:index+1]
+    index += 1
+    return lengthType, index
+
+# Find the length of the packet 
+def findSubPacketLength(binaryString):
+    return binaryToDecimal(binaryString[8:8+14])
+
+def addVersions(binaryString, versionSum, index):
+    version, index = findPacketVersion(binaryString, index)
+    versionSum += version
+    type, index = findPacketType(binaryString, index)
+    if type == 4:
+        literalValue, index = findLiteralValue(binaryString, index)
+        print(literalValue)
+        print(index)
+    else:
+        lengthTypeId, index = findPacketLengthTypeId(binaryString, index)
+        if lengthTypeId == "0":
+            length = findSubPacketLength(binaryString)
+            index += length
+
+
+addVersions(binaryString, 0, 0)
