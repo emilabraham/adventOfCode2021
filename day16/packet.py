@@ -13,7 +13,7 @@ def hexStringToBinary(hexString):
         binary += hexToBinary(hexString[i])
     return binary
 
-binaryString = hexStringToBinary("EE00D40C823060")
+binaryString = hexStringToBinary("38006F45291200")
 
 # Convert a binary number to decimal
 def binaryToDecimal(binary):
@@ -49,23 +49,44 @@ def findPacketLengthTypeId(binaryString, index):
     index += 1
     return lengthType, index
 
-# Find the length of the packet 
-def findSubPacketLength(binaryString):
-    return binaryToDecimal(binaryString[8:8+14])
+def findPacketCount(binaryString, index):
+    packetCount = binaryToDecimal(binaryString[index:index+11])
+    index += 11
+    return packetCount, index
 
-def addVersions(binaryString, versionSum, index):
+# Find the length of the packet 
+def findSubPacketLength(binaryString, index):
+    length = binaryToDecimal(binaryString[index:index+15])
+    index += 15
+    return length, index
+
+# Recursively add version of each packet
+def addVersions(binaryString, versionSum, index, packetCount, bitCount):
+    originalIndex = index
     version, index = findPacketVersion(binaryString, index)
     versionSum += version
     type, index = findPacketType(binaryString, index)
     if type == 4:
         literalValue, index = findLiteralValue(binaryString, index)
-        print(literalValue)
-        print(index)
     else:
         lengthTypeId, index = findPacketLengthTypeId(binaryString, index)
         if lengthTypeId == "0":
-            length = findSubPacketLength(binaryString)
-            index += length
+            bitCount, index = findSubPacketLength(binaryString, index)
+            versionSum += addVersions(binaryString, versionSum, index, packetCount, bitCount)
+            bitCount = 0
+        else:
+            packetCount, index = findPacketCount(binaryString, index)
+            versionSum += addVersions(binaryString, versionSum, index, packetCount, bitCount)
+            packetCount = 0
 
+    if bitCount != 0:
+        print(bitCount)
+        bitCount -= (index - originalIndex)
+        return addVersions(binaryString, versionSum, index, packetCount, bitCount)
+    elif packetCount != 0:
+        return addVersions(binaryString, versionSum, index, packetCount - 1, bitCount)
+    else:
+        breakpoint()
+        return versionSum
 
-addVersions(binaryString, 0, 0)
+print(addVersions(binaryString, 0, 0, 0, 0))
