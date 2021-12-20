@@ -80,8 +80,9 @@ def findSubPacketLength(binaryString, index):
 
 
 # Recursively add version of each packet
+# I think I'm having trouble properly breaking out of this.
+# If I  put a breakpoint inside the breakOutEarly function, it ends up correct without looping.
 def addVersions(binaryString, versionSum, index, packetCount, bitCount):
-    print(index)
     originalIndex = index
     version, index = findPacketVersion(binaryString, index, versionSum)
     if index < 0:
@@ -104,12 +105,14 @@ def addVersions(binaryString, versionSum, index, packetCount, bitCount):
             if index < 0:
                 return versionSum
             addVersions(binaryString, versionSum, index, packetCount, bitCount)
+            bitCount = 0
         else:
             newPacketCount, index = findPacketCount(binaryString, index)
             packetCount += newPacketCount
             if index < 0:
                 return versionSum
             addVersions(binaryString, versionSum, index, packetCount, bitCount)
+            packetCount = 0
 
     if packetCount > 0:
         packetCount -= 1
