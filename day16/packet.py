@@ -13,7 +13,7 @@ def hexStringToBinary(hexString):
         binary += hexToBinary(hexString[i])
     return binary
 
-binaryString = hexStringToBinary("C0015000016115A2E0802F182340")
+binaryString = hexStringToBinary(line)
 
 # Convert a binary number to decimal
 def binaryToDecimal(binary):
@@ -81,6 +81,7 @@ def findSubPacketLength(binaryString, index):
 
 # Recursively add version of each packet
 def addVersions(binaryString, versionSum, index, packetCount, bitCount):
+    print(index)
     originalIndex = index
     version, index = findPacketVersion(binaryString, index, versionSum)
     if index < 0:
@@ -98,13 +99,14 @@ def addVersions(binaryString, versionSum, index, packetCount, bitCount):
         if index < 0:
             return versionSum
         if lengthTypeId == "0":
-            bitCount, index = findSubPacketLength(binaryString, index)
+            newBitCount, index = findSubPacketLength(binaryString, index)
+            bitCount += newBitCount
             if index < 0:
                 return versionSum
-            breakpoint()
             addVersions(binaryString, versionSum, index, packetCount, bitCount)
         else:
-            packetCount, index = findPacketCount(binaryString, index)
+            newPacketCount, index = findPacketCount(binaryString, index)
+            packetCount += newPacketCount
             if index < 0:
                 return versionSum
             addVersions(binaryString, versionSum, index, packetCount, bitCount)
@@ -119,6 +121,3 @@ def addVersions(binaryString, versionSum, index, packetCount, bitCount):
     return versionSum
 
 print(addVersions(binaryString, 0, 0, 0, 0))
-# C0015000016115A2E0802F182340
-# This one doesn't work, while all the others do. I'm not sure why.
-# Are there any other places besides literal value where we remove leading zeroes?
