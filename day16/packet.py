@@ -13,7 +13,7 @@ def hexStringToBinary(hexString):
         binary += hexToBinary(hexString[i])
     return binary
 
-binaryString = hexStringToBinary(line)
+binaryString = hexStringToBinary("C200B40A82")
 
 # Convert a binary number to decimal
 def binaryToDecimal(binary):
@@ -21,13 +21,14 @@ def binaryToDecimal(binary):
 
 def breakOutEarly(binaryString, index, increment):
     if index + increment >= len(binaryString):
+        breakpoint()
         return True
     return False
 
 # find the packet version
-def findPacketVersion(binaryString, index, versionSum):
+def findPacketVersion(binaryString, index):
     if breakOutEarly(binaryString, index, 3):
-        return versionSum, -1
+        return 0, -1
     version = binaryToDecimal(binaryString[index:index+3])
     index += 3
     return version, index
@@ -82,45 +83,65 @@ def findSubPacketLength(binaryString, index):
 # Recursively add version of each packet
 # I think I'm having trouble properly breaking out of this.
 # If I  put a breakpoint inside the breakOutEarly function, it ends up correct without looping.
-def addVersions(binaryString, versionSum, index, packetCount, bitCount):
+def addVersions(binaryString, accumulator, index, packetCount, bitCount, currentType, isSecond):
     originalIndex = index
-    version, index = findPacketVersion(binaryString, index, versionSum)
-    if index < 0:
-        return version + versionSum
-    versionSum += version
+    version, index = findPacketVersion(binaryString, index)
     type, index = findPacketType(binaryString, index)
-    if index < 0:
-        return versionSum
     if type == 4:
         literalValue, index = findLiteralValue(binaryString, index)
-        if index < 0:
-            return versionSum
+        if currentType == -1 or currentType == 4:
+            return accumulator
+        elif currentType == 0:
+                accumulator += literalValue
+        elif currentType == 1:
+                accumulator *= literalValue
+        elif currentType == 2:
+            if accumulator == 0 or literalValue <= accumulator:
+                accumulator = literalValue
+        elif currentType == 3:
+            if accumulator == 0 or literalValue >= accumulator:
+                accumulator = literalValue
+        elif currentType == 5:
+            if isSecond:
+                accumulator = (1 if accumulator > literalValue else 0)
+                isSecond = False
+            else:
+                accumulator = literalValue
+                isSecond = True
+        elif currentType == 6:
+            if isSecond:
+                accumulator = (1 if accumulator < literalValue else 0)
+                isSecond = False
+            else:
+                accumulator = literalValue
+                isSecond = True
+        elif currentType == 7:
+            if isSecond:
+                accumulator = (1 if accumulator == literalValue else 0)
+                isSecond = False
+            else:
+                accumulator = literalValue
+                isSecond = True
     else:
         lengthTypeId, index = findPacketLengthTypeId(binaryString, index)
-        if index < 0:
-            return versionSum
         if lengthTypeId == "0":
             newBitCount, index = findSubPacketLength(binaryString, index)
             bitCount += newBitCount
-            if index < 0:
-                return versionSum
-            addVersions(binaryString, versionSum, index, packetCount, bitCount)
+            addVersions(binaryString, accumulator, index, packetCount, bitCount, type, isSecond)
             bitCount = 0
         else:
             newPacketCount, index = findPacketCount(binaryString, index)
             packetCount += newPacketCount
-            if index < 0:
-                return versionSum
-            addVersions(binaryString, versionSum, index, packetCount, bitCount)
+            addVersions(binaryString, accumulator, index, packetCount, bitCount, type, isSecond)
             packetCount = 0
 
     if packetCount > 0:
         packetCount -= 1
-        return addVersions(binaryString, versionSum, index, packetCount, bitCount)
+        return addVersions(binaryString, accumulator, index, packetCount, bitCount, type, isSecond)
     if bitCount > 0:
         bitCount -= (index - originalIndex)
-        return addVersions(binaryString, versionSum, index, packetCount, bitCount)
+        return addVersions(binaryString, accumulator, index, packetCount, bitCount, type, isSecond)
 
-    return versionSum
+    return accumulator
 
-print(addVersions(binaryString, 0, 0, 0, 0))
+print(addVersions(binaryString, 0, 0, 0, 0, -1, False))
