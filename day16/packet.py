@@ -1,4 +1,5 @@
 # Doing some hexadecimal packet manipulation
+import numpy as np
 fp = open("input")
 line = fp.readline()
 
@@ -134,25 +135,80 @@ def addVersions(binaryString, accumulator, index, packetCount, bitCount, current
         if lengthTypeId == "0":
             newBitCount, index = findSubPacketLength(binaryString, index, accumulator)
             bitCount += newBitCount
-            addVersions(binaryString, accumulator, index, packetCount, bitCount, currentType, isSecond)
-            bitCount = 0
+            packetCount -= 0 if packetCount == 0 else 1
+            return addVersions(binaryString, accumulator, index, packetCount, bitCount, currentType, isSecond)
         else:
             newPacketCount, index = findPacketCount(binaryString, index, accumulator)
             packetCount += newPacketCount
-            addVersions(binaryString, accumulator, index, packetCount, bitCount, currentType, isSecond)
-            packetCount = 0
+            bitCount -= 0 if bitCount == 0 else (index - originalIndex)
+            return addVersions(binaryString, accumulator, index, packetCount, bitCount, currentType, isSecond)
 
     if packetCount > 0:
         packetCount -= 1
-        if (packetCount != 0 and latestType is not -1):
+        bitCount -= 0 if bitCount == 0 else (index - originalIndex)
+        if (packetCount != 0 and latestType != -1):
             currentType.append(latestType)
         return addVersions(binaryString, accumulator, index, packetCount, bitCount, currentType, isSecond)
     if bitCount > 0:
         bitCount -= (index - originalIndex)
-        if (bitCount != 0 and latestType is not -1):
+        packetCount -= 0 if packetCount == 0 else 1
+        if (bitCount != 0 and latestType != -1):
             currentType.append(latestType)
         return addVersions(binaryString, accumulator, index, packetCount, bitCount, currentType, isSecond)
 
     return accumulator
 
-print(addVersions(binaryString, 0, 0, 0, 0, [], False))
+def incrementPacketAndBitCount(packetCount, bitCount, index, originalIndex):
+    bitCount -= 0 if bitCount == 0 else (index - originalIndex)
+    packetCount -= 0 if packetCount == 0 else 1
+    return packetCount, bitCount
+
+def reduceAccumulator(accumulator, type):
+    if type == 0:
+        return sum(accumulator)
+    elif type == 1:
+        return np.product(accumulator)
+    elif type == 2:
+        return min(accumulator)
+    elif type == 3:
+        return max(accumulator)
+    elif type == 4:
+        return accumulator
+    elif type == 5:
+        return 1 if accumulator[0] > accumulator[1] else 0
+    elif type == 6:
+        return 1 if accumulator[0] < accumulator[1] else 0
+    elif type == 7:
+        return 1 if accumulator[0] == accumulator[1] else 0
+
+def calculatePacket(binaryString, accumulator, index, packetCount, bitCount):
+    breakpoint()
+    originalIndex = index
+    version, index = findPacketVersion(binaryString, index, accumulator)
+    type, index = findPacketType(binaryString, index, accumulator)
+    if type == 4:
+        literalValue, index = findLiteralValue(binaryString, index, accumulator)
+        packetCount, bitCount = incrementPacketAndBitCount(packetCount, bitCount, index, originalIndex)
+        accumulator.append(literalValue)
+        return accumulator
+    else:
+        lengthTypeId, index = findPacketLengthTypeId(binaryString, index, accumulator)
+        if lengthTypeId == "0":
+            newBitCount, index = findSubPacketLength(binaryString, index, accumulator)
+            bitCount += newBitCount
+            packetCount -= 0 if packetCount == 0 else 1
+            newAccumulator = calculatePacket(binaryString, [], index, packetCount, bitCount)
+            reduced = reduceAccumulator(newAccumulator, type)
+            accumulator.append(reduced)
+            return accumulator
+        else:
+            newPacketCount, index = findPacketCount(binaryString, index, accumulator)
+            packetCount += newPacketCount
+            bitCount -= 0 if bitCount == 0 else (index - originalIndex)
+            newAccumulator = calculatePacket(binaryString, [], index, packetCount, bitCount)
+            reduced = reduceAccumulator(newAccumulator, type)
+            accumulator.append(reduced)
+            return accumulator
+
+# print(addVersions(binaryString, 0, 0, 0, 0, [], False))
+print(calculatePacket(binaryString, [], 0, 0, 0))
